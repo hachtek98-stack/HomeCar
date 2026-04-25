@@ -1,5 +1,6 @@
 import React, { useContext } from 'react';
-import { View, Text, StyleSheet, Image, Button, ScrollView } from 'react-native';
+import { View, Text, StyleSheet, Image, Button, ScrollView, Dimensions } from 'react-native';
+import MapView, { Marker } from 'react-native-maps';
 import { AppContext } from '../../context/AppContext';
 import { useNavigation, useRoute } from '@react-navigation/native';
 
@@ -27,6 +28,27 @@ export default function RequestDetails() {
         <Text style={styles.status}>
           Statut : {request.status === 'paid' ? 'En attente' : 'Acceptée'}
         </Text>
+
+        {/* Map view for patient location */}
+        {request.latitude && request.longitude && (
+          <View style={styles.mapContainer}>
+            <Text style={styles.label}>Localisation du patient :</Text>
+            <MapView
+              style={styles.map}
+              initialRegion={{
+                latitude: request.latitude,
+                longitude: request.longitude,
+                latitudeDelta: 0.01,
+                longitudeDelta: 0.01,
+              }}
+            >
+              <Marker
+                coordinate={{ latitude: request.latitude, longitude: request.longitude }}
+                title="Domicile du patient"
+              />
+            </MapView>
+          </View>
+        )}
 
         {/* Reveal patient phone number ONLY if the nurse has accepted */}
         {request.status === 'confirmed' && request.nurseId === user.id ? (
@@ -107,5 +129,13 @@ const styles = StyleSheet.create({
     fontSize: 24,
     fontWeight: 'bold',
     color: '#1565c0',
+  },
+  mapContainer: {
+    marginBottom: 20,
+    alignItems: 'center',
+  },
+  map: {
+    width: Dimensions.get('window').width - 40,
+    height: 250,
   }
 });

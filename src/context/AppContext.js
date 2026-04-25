@@ -1,9 +1,18 @@
-import React, { createContext, useState } from 'react';
+import React, { createContext, useState, useEffect } from 'react';
+import * as Device from 'expo-device';
+import * as Notifications from 'expo-notifications';
+import Constants from 'expo-constants';
+import { Platform } from 'react-native';
 
 export const AppContext = createContext();
 
-// Use the local IP of the machine running the backend for the React Native app to reach it
-import { Platform } from 'react-native';
+Notifications.setNotificationHandler({
+  handleNotification: async () => ({
+    shouldShowAlert: true,
+    shouldPlaySound: true,
+    shouldSetBadge: false,
+  }),
+});
 
 // Dynamically determine backend URL.
 // Android emulators use 10.0.2.2. Web/iOS Simulator use localhost.
@@ -15,14 +24,61 @@ export const AppProvider = ({ children }) => {
   const [user, setUser] = useState(null);
   const [requests, setRequests] = useState([]);
 
-  const fetchRequests = async () => {
+  const fetchRequests = async (currentUser) => {
     try {
-      const response = await fetch(`${API_URL}/requests`);
+      let url = `${API_URL}/requests`;
+      // If patient, only fetch their requests. If nurse, fetch all.
+      // In a real app, backend should handle role-based filtering based on auth token.
+      if (currentUser && currentUser.role === 'patient') {
+        url += `?patientId=${currentUser.id}`;
+      }
+      const response = await fetch(url);
       const data = await response.json();
       setRequests(data);
     } catch (error) {
       console.error("Error fetching requests:", error);
     }
+  };
+
+  const registerForPushNotificationsAsync = async (userId) => {
+    let token;
+    if (Platform.OS === 'android') {
+      await Notifications.setNotificationChannelAsync('default', {
+        name: 'default',
+        importance: Notifications.AndroidImportance.MAX,
+        vibrationPattern: [0, 250, 250, 250],
+        lightColor: '#FF231F7C',
+      });
+    }
+
+    if (Device.isDevice) {
+      const { status: existingStatus } = await Notifications.getPermissionsAsync();
+      let finalStatus = existingStatus;
+      if (existingStatus !== 'granted') {
+        const { status } = await Notifications.requestPermissionsAsync();
+        finalStatus = status;
+      }
+      if (finalStatus !== 'granted') {
+        alert('Failed to get push token for push notification!');
+        return;
+      }
+      try {
+        const projectId = Constants?.expoConfig?.extra?.eas?.projectId ?? Constants?.easConfig?.projectId;
+        token = (await Notifications.getExpoPushTokenAsync({ projectId })).data;
+
+        // Send token to backend
+        await fetch(`${API_URL}/users/${userId}/token`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ pushToken: token })
+        });
+      } catch (e) {
+        console.error("Push token error", e);
+      }
+    } else {
+      console.log('Must use physical device for Push Notifications');
+    }
+    return token;
   };
 
   const login = async (role, phone) => {
@@ -35,7 +91,8 @@ export const AppProvider = ({ children }) => {
       const data = await response.json();
       if (response.ok) {
         setUser(data);
-        fetchRequests(); // Initial fetch on login
+        fetchRequests(data); // Initial fetch on login
+        registerForPushNotificationsAsync(data.id); // Register push token
       } else {
         alert(data.error);
       }
@@ -58,7 +115,7 @@ export const AppProvider = ({ children }) => {
         body: JSON.stringify(requestData)
       });
       if (response.ok) {
-        fetchRequests(); // Refresh requests
+        fetchRequests(user); // Refresh requests
       }
     } catch (error) {
       console.error("Error adding request:", error);
@@ -73,7 +130,7 @@ export const AppProvider = ({ children }) => {
         body: JSON.stringify({ paymentPhone })
       });
       if (response.ok) {
-        fetchRequests(); // Refresh requests
+        fetchRequests(user); // Refresh requests
       }
     } catch (error) {
       console.error("Error paying request:", error);
@@ -88,7 +145,7 @@ export const AppProvider = ({ children }) => {
         body: JSON.stringify({ nurseId })
       });
       if (response.ok) {
-        fetchRequests(); // Refresh requests
+        fetchRequests(user); // Refresh requests
       }
     } catch (error) {
       console.error("Error accepting request:", error);

@@ -13,7 +13,8 @@ const db = new sqlite3.Database(dbPath, (err) => {
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             name TEXT NOT NULL,
             phone TEXT NOT NULL UNIQUE,
-            role TEXT NOT NULL CHECK(role IN ('patient', 'nurse'))
+            role TEXT NOT NULL CHECK(role IN ('patient', 'nurse')),
+            pushToken TEXT
         )`);
 
         // Create Requests table
@@ -24,6 +25,8 @@ const db = new sqlite3.Database(dbPath, (err) => {
             prescriptionImage TEXT NOT NULL,
             status TEXT DEFAULT 'pending',
             paymentPhone TEXT,
+            latitude REAL,
+            longitude REAL,
             createdAt DATETIME DEFAULT CURRENT_TIMESTAMP,
             FOREIGN KEY(patientId) REFERENCES users(id),
             FOREIGN KEY(nurseId) REFERENCES users(id)

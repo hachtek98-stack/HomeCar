@@ -1,9 +1,37 @@
 const express = require('express');
 const cors = require('cors');
 const bodyParser = require('body-parser');
+const { Expo } = require('expo-server-sdk');
 const db = require('./database');
 
 const app = express();
+const expo = new Expo();
+
+// Helper to send push notifications
+const sendPushNotification = async (somePushTokens, message) => {
+    let messages = [];
+    for (let pushToken of somePushTokens) {
+        if (!Expo.isExpoPushToken(pushToken)) {
+            console.error(`Push token ${pushToken} is not a valid Expo push token`);
+            continue;
+        }
+        messages.push({
+            to: pushToken,
+            sound: 'default',
+            body: message,
+            data: { withSome: 'data' },
+        });
+    }
+
+    let chunks = expo.chunkPushNotifications(messages);
+    for (let chunk of chunks) {
+        try {
+            await expo.sendPushNotificationsAsync(chunk);
+        } catch (error) {
+            console.error('Error sending push notification:', error);
+        }
+    }
+};
 const PORT = process.env.PORT || 3000;
 
 app.use(cors());
@@ -45,17 +73,28 @@ app.post('/api/login', (req, res) => {
     });
 });
 
+// 1.5 Update Push Token
+app.post('/api/users/:id/token', (req, res) => {
+    const { id } = req.params;
+    const { pushToken } = req.body;
+
+    db.run(`UPDATE users SET pushToken = ? WHERE id = ?`, [pushToken, id], function(err) {
+        if (err) return res.status(500).json({ error: err.message });
+        res.json({ success: true });
+    });
+});
+
 // 2. Create a Request
 app.post('/api/requests', (req, res) => {
-    const { patientId, prescriptionImage } = req.body;
+    const { patientId, prescriptionImage, latitude, longitude } = req.body;
 
     if (!patientId || !prescriptionImage) {
         return res.status(400).json({ error: 'patientId and prescriptionImage are required' });
     }
 
     db.run(
-        `INSERT INTO requests (patientId, prescriptionImage) VALUES (?, ?)`,
-        [patientId, prescriptionImage],
+        `INSERT INTO requests (patientId, prescriptionImage, latitude, longitude) VALUES (?, ?, ?, ?)`,
+        [patientId, prescriptionImage, latitude, longitude],
         function(err) {
             if (err) return res.status(500).json({ error: err.message });
 
@@ -104,6 +143,14 @@ app.put('/api/requests/:id/pay', (req, res) => {
             if (err) return res.status(500).json({ error: err.message });
             if (this.changes === 0) return res.status(404).json({ error: 'Request not found or already paid' });
 
+            // Notify nurses about the new paid request
+            db.all(`SELECT pushToken FROM users WHERE role = 'nurse' AND pushToken IS NOT NULL`, [], (err, rows) => {
+                if (!err && rows.length > 0) {
+                    const tokens = rows.map(r => r.pushToken);
+                    sendPushNotification(tokens, "Nouvelle demande de prélèvement disponible !");
+                }
+            });
+
             res.json({ success: true, message: 'Payment recorded' });
         }
     );
@@ -124,6 +171,18 @@ app.put('/api/requests/:id/accept', (req, res) => {
         function(err) {
             if (err) return res.status(500).json({ error: err.message });
             if (this.changes === 0) return res.status(404).json({ error: 'Request not found or already accepted' });
+
+            // Notify patient that a nurse accepted
+            db.get(`
+                SELECT u.pushToken
+                FROM requests r
+                JOIN users u ON r.patientId = u.id
+                WHERE r.id = ? AND u.pushToken IS NOT NULL
+            `, [id], (err, row) => {
+                if (!err && row && row.pushToken) {
+                    sendPushNotification([row.pushToken], "Un infirmier a accepté votre demande et est en route !");
+                }
+            });
 
             res.json({ success: true, message: 'Request accepted' });
         }

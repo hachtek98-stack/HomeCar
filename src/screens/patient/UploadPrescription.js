@@ -1,11 +1,13 @@
 import React, { useState, useContext } from 'react';
-import { View, Text, Button, Image, StyleSheet, Alert } from 'react-native';
+import { View, Text, Button, Image, StyleSheet, ActivityIndicator } from 'react-native';
 import * as ImagePicker from 'expo-image-picker';
+import * as Location from 'expo-location';
 import { AppContext } from '../../context/AppContext';
 import { useNavigation } from '@react-navigation/native';
 
 export default function UploadPrescription() {
   const [image, setImage] = useState(null);
+  const [loading, setLoading] = useState(false);
   const { addRequest, user } = useContext(AppContext);
   const navigation = useNavigation();
 
@@ -44,19 +46,39 @@ export default function UploadPrescription() {
     }
   };
 
-  const handleSubmit = () => {
+  const handleSubmit = async () => {
     if (!image) {
       alert('Veuillez sélectionner une image de votre ordonnance');
       return;
     }
 
-    addRequest({
-      patientId: user.id,
-      prescriptionImage: image,
-      patientPhone: user.phone // Phone is kept but hidden until confirmed
-    });
+    setLoading(true);
 
-    navigation.navigate('PatientDashboard');
+    try {
+      // Get Location
+      let { status } = await Location.requestForegroundPermissionsAsync();
+      if (status !== 'granted') {
+        alert('L\'accès à la position est nécessaire pour que l\'infirmier puisse venir à vous.');
+        setLoading(false);
+        return;
+      }
+
+      let location = await Location.getCurrentPositionAsync({});
+
+      await addRequest({
+        patientId: user.id,
+        prescriptionImage: image,
+        latitude: location.coords.latitude,
+        longitude: location.coords.longitude
+      });
+
+      navigation.navigate('PatientDashboard');
+    } catch (error) {
+      console.error(error);
+      alert('Une erreur est survenue lors de la géolocalisation.');
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -77,12 +99,16 @@ export default function UploadPrescription() {
       )}
 
       <View style={styles.submitContainer}>
-        <Button
-          title="Soumettre la demande"
-          onPress={handleSubmit}
-          disabled={!image}
-          color="#4CAF50"
-        />
+        {loading ? (
+          <ActivityIndicator size="large" color="#4CAF50" />
+        ) : (
+          <Button
+            title="Soumettre la demande (avec position actuelle)"
+            onPress={handleSubmit}
+            disabled={!image}
+            color="#4CAF50"
+          />
+        )}
       </View>
     </View>
   );
