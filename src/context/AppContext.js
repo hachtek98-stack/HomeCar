@@ -15,19 +15,19 @@ export const AppProvider = ({ children }) => {
   };
 
   const addRequest = (request) => {
-    setRequests([...requests, { ...request, id: Date.now().toString(), status: 'pending' }]);
+    setRequests(prev => [...prev, { ...request, id: Date.now().toString(), status: 'pending' }]);
   };
 
   const updateRequestStatus = (id, status) => {
-    setRequests(requests.map(req => req.id === id ? { ...req, status } : req));
+    setRequests(prev => prev.map(req => req.id === id ? { ...req, status } : req));
   };
 
   const payRequest = (id, phoneNumber) => {
-    setRequests(requests.map(req => req.id === id ? { ...req, status: 'paid', paymentPhone: phoneNumber } : req));
+    setRequests(prev => prev.map(req => req.id === id ? { ...req, status: 'paid', paymentPhone: phoneNumber } : req));
   };
 
   const acceptRequest = (requestId, nurseId) => {
-    setRequests(requests.map(req => req.id === requestId ? { ...req, status: 'confirmed', nurseId } : req));
+    setRequests(prev => prev.map(req => req.id === requestId ? { ...req, status: 'confirmed', nurseId } : req));
   };
 
   return (
