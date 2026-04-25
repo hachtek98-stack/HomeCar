@@ -14,11 +14,13 @@ export default function UploadPrescription() {
     let result = await ImagePicker.launchImageLibraryAsync({
       mediaTypes: ImagePicker.MediaTypeOptions.Images,
       allowsEditing: true,
-      quality: 1,
+      quality: 0.5, // Compress slightly
+      base64: true, // Request base64
     });
 
     if (!result.canceled) {
-      setImage(result.assets[0].uri);
+      // Create data URI for sending to backend
+      setImage(`data:image/jpeg;base64,${result.assets[0].base64}`);
     }
   };
 
@@ -32,11 +34,13 @@ export default function UploadPrescription() {
 
     const result = await ImagePicker.launchCameraAsync({
       allowsEditing: true,
-      quality: 1,
+      quality: 0.5, // Compress slightly
+      base64: true, // Request base64
     });
 
     if (!result.canceled) {
-      setImage(result.assets[0].uri);
+      // Create data URI for sending to backend
+      setImage(`data:image/jpeg;base64,${result.assets[0].base64}`);
     }
   };
 

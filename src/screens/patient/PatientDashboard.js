@@ -21,7 +21,7 @@ export default function PatientDashboard() {
 
   const renderItem = ({ item }) => (
     <View style={styles.card}>
-      <Text style={styles.date}>Demande du {new Date(parseInt(item.id)).toLocaleDateString()}</Text>
+      <Text style={styles.date}>Demande du {new Date(item.createdAt).toLocaleDateString()}</Text>
       <Text style={styles.status}>Statut : {getStatusText(item.status)}</Text>
       {item.status === 'pending' && (
         <Button

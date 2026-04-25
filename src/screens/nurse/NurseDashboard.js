@@ -15,7 +15,7 @@ export default function NurseDashboard() {
       style={styles.card}
       onPress={() => navigation.navigate('RequestDetails', { request: item })}
     >
-      <Text style={styles.date}>Demande du {new Date(parseInt(item.id)).toLocaleDateString()}</Text>
+      <Text style={styles.date}>Demande du {new Date(item.createdAt).toLocaleDateString()}</Text>
       <Text style={styles.status}>
         Statut : {item.status === 'paid' ? 'Nouvelle demande' : 'Acceptée par vous'}
       </Text>

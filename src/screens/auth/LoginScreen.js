@@ -7,13 +7,12 @@ export default function LoginScreen() {
   const [phone, setPhone] = useState('');
 
   const handleLogin = (role) => {
-    // Mock login
-    login({
-      id: Math.random().toString(),
-      name: role === 'patient' ? 'Patient Test' : 'Infirmier Test',
-      phone: phone || '00000000',
-      role
-    });
+    if (!phone) {
+        alert("Veuillez entrer votre numéro de téléphone");
+        return;
+    }
+    // Call API login
+    login(role, phone);
   };
 
   return (
