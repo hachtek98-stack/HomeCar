@@ -1,27 +1,41 @@
-import React, { useContext } from 'react';
+import React, { useContext, useMemo, useCallback } from 'react';
 import { View, Text, StyleSheet, FlatList, TouchableOpacity } from 'react-native';
 import { AppContext } from '../../context/AppContext';
 import { useNavigation } from '@react-navigation/native';
+
+// Memoized List Item to prevent unnecessary re-renders
+const RequestItem = React.memo(({ item, onPress }) => (
+  <TouchableOpacity
+    style={styles.card}
+    onPress={() => onPress(item)}
+  >
+    <Text style={styles.date}>Demande du {new Date(item.createdAt).toLocaleDateString()}</Text>
+    <Text style={styles.status}>
+      Statut : {item.status === 'paid' ? 'Nouvelle demande' : 'Acceptée par vous'}
+    </Text>
+    <Text style={styles.details}>Appuyez pour voir l'ordonnance</Text>
+  </TouchableOpacity>
+));
 
 export default function NurseDashboard() {
   const { user, requests, logout } = useContext(AppContext);
   const navigation = useNavigation();
 
+  // ⚡ Bolt: Memoize derived data to avoid recalculation on every render
   // Nurses only see requests that are 'paid' (ready to be picked up) or assigned to them
-  const availableRequests = requests.filter(req => req.status === 'paid' || (req.status === 'confirmed' && req.nurseId === user.id));
+  const availableRequests = useMemo(() => {
+    return requests.filter(req => req.status === 'paid' || (req.status === 'confirmed' && req.nurseId === user?.id));
+  }, [requests, user?.id]);
 
-  const renderItem = ({ item }) => (
-    <TouchableOpacity
-      style={styles.card}
-      onPress={() => navigation.navigate('RequestDetails', { request: item })}
-    >
-      <Text style={styles.date}>Demande du {new Date(item.createdAt).toLocaleDateString()}</Text>
-      <Text style={styles.status}>
-        Statut : {item.status === 'paid' ? 'Nouvelle demande' : 'Acceptée par vous'}
-      </Text>
-      <Text style={styles.details}>Appuyez pour voir l'ordonnance</Text>
-    </TouchableOpacity>
-  );
+  // ⚡ Bolt: Memoize press handler to avoid creating new functions on every render
+  const handlePress = useCallback((item) => {
+    navigation.navigate('RequestDetails', { request: item });
+  }, [navigation]);
+
+  // ⚡ Bolt: Memoize renderItem to pass stable references to FlatList
+  const renderItem = useCallback(({ item }) => (
+    <RequestItem item={item} onPress={handlePress} />
+  ), [handlePress]);
 
   return (
     <View style={styles.container}>
