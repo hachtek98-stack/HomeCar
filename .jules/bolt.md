@@ -1,0 +1,3 @@
+## 2025-05-24 - React Native FlatList Performance Pitfalls
+**Learning:** In React Native, passing unmemoized inline functions to `renderItem` or unmemoized derived data (e.g. `requests.filter(...)`) directly to a `FlatList` forces it to unnecessarily re-render all items whenever the parent component renders. The lack of these basic optimizations can cause severe UI blockages on lower-end devices.
+**Action:** Always memoize derived list data using `useMemo` and list item rendering functions using `useCallback`. Extract list items into their own `React.memo` wrapped components if they contain complex structures to guarantee performance.
