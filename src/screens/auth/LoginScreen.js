@@ -1,37 +1,64 @@
 import React, { useContext, useState } from 'react';
-import { View, Text, TextInput, Button, StyleSheet } from 'react-native';
+import { View, Text, TextInput, Button, StyleSheet, ActivityIndicator } from 'react-native';
 import { AppContext } from '../../context/AppContext';
 
 export default function LoginScreen() {
   const { login } = useContext(AppContext);
   const [phone, setPhone] = useState('');
+  const [isLoading, setIsLoading] = useState(false);
 
-  const handleLogin = (role) => {
+  const handleLogin = async (role) => {
     if (!phone) {
         alert("Veuillez entrer votre numéro de téléphone");
         return;
     }
-    // Call API login
-    login(role, phone);
+
+    setIsLoading(true);
+    try {
+      // Call API login
+      await login(role, phone);
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (
     <View style={styles.container}>
-      <Text style={styles.title}>HomeCar</Text>
+      <Text style={styles.title} accessibilityRole="header">HomeCar</Text>
       <Text style={styles.subtitle}>Connexion</Text>
 
       <TextInput
-        style={styles.input}
+        style={[styles.input, isLoading && styles.inputDisabled]}
         placeholder="Numéro de téléphone"
         value={phone}
         onChangeText={setPhone}
         keyboardType="phone-pad"
+        editable={!isLoading}
+        accessibilityLabel="Numéro de téléphone"
+        accessibilityHint="Saisissez votre numéro de téléphone pour vous connecter"
       />
 
       <View style={styles.buttonContainer}>
-        <Button title="Je suis Patient" onPress={() => handleLogin('patient')} />
-        <View style={styles.spacer} />
-        <Button title="Je suis Infirmier" onPress={() => handleLogin('nurse')} color="#2196F3" />
+        {isLoading ? (
+          <ActivityIndicator size="large" color="#3f51b5" accessibilityLabel="Connexion en cours" />
+        ) : (
+          <>
+            <Button
+              title="Je suis Patient"
+              onPress={() => handleLogin('patient')}
+              accessibilityLabel="Se connecter en tant que patient"
+              accessibilityHint="Connectez-vous à votre espace patient"
+            />
+            <View style={styles.spacer} />
+            <Button
+              title="Je suis Infirmier"
+              onPress={() => handleLogin('nurse')}
+              color="#2196F3"
+              accessibilityLabel="Se connecter en tant qu'infirmier"
+              accessibilityHint="Connectez-vous à votre espace infirmier"
+            />
+          </>
+        )}
       </View>
     </View>
   );
@@ -63,8 +90,14 @@ const styles = StyleSheet.create({
     borderRadius: 8,
     marginBottom: 20,
   },
+  inputDisabled: {
+    backgroundColor: '#f5f5f5',
+    color: '#a0a0a0',
+  },
   buttonContainer: {
     marginTop: 20,
+    minHeight: 100, // Reserve space to prevent layout jump
+    justifyContent: 'center',
   },
   spacer: {
     height: 15,
