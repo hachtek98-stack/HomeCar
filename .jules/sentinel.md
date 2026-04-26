@@ -1,0 +1,4 @@
+## 2025-02-24 - [Information Exposure in Database Error Handling]
+**Vulnerability:** Leaking internal database error messages (`err.message`) to the client via `res.status(500).json({ error: err.message });` in multiple backend endpoints.
+**Learning:** Returning raw database error messages provides attackers with valuable insights into the database schema, query structure, and application state, which can be leveraged for further attacks such as SQL injection or enumeration.
+**Prevention:** Implement secure error handling that logs the detailed error internally for debugging and returns a generic, sanitized error message like "Internal server error" to the client.
