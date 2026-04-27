@@ -1,0 +1,3 @@
+## 2024-04-27 - [React Native FlatList Performance Optimization]
+**Learning:** In React Native, passing dynamically filtered arrays directly into `FlatList` `data` props and unmemoized functions into `renderItem` causes the `FlatList` to lose its internal pure component optimizations. Every render creates a new array reference and function reference, forcing the entire list to re-render.
+**Action:** Always wrap `FlatList` data manipulations in `useMemo` and `renderItem` functions in `useCallback` to preserve reference equality and ensure smooth scrolling performance, especially for lists that might grow large.
