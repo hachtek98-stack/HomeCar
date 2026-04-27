@@ -1,18 +1,25 @@
 import React, { useContext, useState } from 'react';
-import { View, Text, TextInput, Button, StyleSheet } from 'react-native';
+import { View, Text, TextInput, Button, StyleSheet, ActivityIndicator } from 'react-native';
 import { AppContext } from '../../context/AppContext';
 
 export default function LoginScreen() {
   const { login } = useContext(AppContext);
   const [phone, setPhone] = useState('');
+  const [isLoading, setIsLoading] = useState(false);
 
-  const handleLogin = (role) => {
+  const handleLogin = async (role) => {
     if (!phone) {
         alert("Veuillez entrer votre numéro de téléphone");
         return;
     }
-    // Call API login
-    login(role, phone);
+
+    setIsLoading(true);
+    try {
+      // Call API login
+      await login(role, phone);
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (
@@ -26,12 +33,28 @@ export default function LoginScreen() {
         value={phone}
         onChangeText={setPhone}
         keyboardType="phone-pad"
+        accessibilityLabel="Numéro de téléphone"
       />
 
       <View style={styles.buttonContainer}>
-        <Button title="Je suis Patient" onPress={() => handleLogin('patient')} />
-        <View style={styles.spacer} />
-        <Button title="Je suis Infirmier" onPress={() => handleLogin('nurse')} color="#2196F3" />
+        {isLoading ? (
+          <ActivityIndicator size="large" color="#3f51b5" />
+        ) : (
+          <>
+            <Button
+              title="Je suis Patient"
+              onPress={() => handleLogin('patient')}
+              disabled={!phone}
+            />
+            <View style={styles.spacer} />
+            <Button
+              title="Je suis Infirmier"
+              onPress={() => handleLogin('nurse')}
+              color="#2196F3"
+              disabled={!phone}
+            />
+          </>
+        )}
       </View>
     </View>
   );
