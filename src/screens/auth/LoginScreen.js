@@ -1,18 +1,27 @@
 import React, { useContext, useState } from 'react';
-import { View, Text, TextInput, Button, StyleSheet } from 'react-native';
+import { View, Text, TextInput, Button, StyleSheet, ActivityIndicator } from 'react-native';
 import { AppContext } from '../../context/AppContext';
 
 export default function LoginScreen() {
   const { login } = useContext(AppContext);
   const [phone, setPhone] = useState('');
+  const [loadingRole, setLoadingRole] = useState(null);
 
-  const handleLogin = (role) => {
+  const handleLogin = async (role) => {
     if (!phone) {
         alert("Veuillez entrer votre numéro de téléphone");
         return;
     }
-    // Call API login
-    login(role, phone);
+
+    setLoadingRole(role);
+    try {
+      // Call API login
+      await login(role, phone);
+    } finally {
+      // It's possible the component is unmounted upon successful login,
+      // but in case login fails, we reset the loading state.
+      setLoadingRole(null);
+    }
   };
 
   return (
@@ -26,12 +35,31 @@ export default function LoginScreen() {
         value={phone}
         onChangeText={setPhone}
         keyboardType="phone-pad"
+        editable={!loadingRole}
+        accessibilityLabel="Numéro de téléphone"
       />
 
       <View style={styles.buttonContainer}>
-        <Button title="Je suis Patient" onPress={() => handleLogin('patient')} />
+        {loadingRole === 'patient' ? (
+          <ActivityIndicator size="large" color="#2196F3" />
+        ) : (
+          <Button
+            title="Je suis Patient"
+            onPress={() => handleLogin('patient')}
+            disabled={loadingRole !== null}
+          />
+        )}
         <View style={styles.spacer} />
-        <Button title="Je suis Infirmier" onPress={() => handleLogin('nurse')} color="#2196F3" />
+        {loadingRole === 'nurse' ? (
+          <ActivityIndicator size="large" color="#2196F3" />
+        ) : (
+          <Button
+            title="Je suis Infirmier"
+            onPress={() => handleLogin('nurse')}
+            color="#2196F3"
+            disabled={loadingRole !== null}
+          />
+        )}
       </View>
     </View>
   );
