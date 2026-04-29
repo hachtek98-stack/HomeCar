@@ -1,0 +1,3 @@
+## 2024-04-29 - Prevent Errors with Disabled States & Explicit Labels
+**Learning:** In the authentication forms, relying solely on `alert()` for empty submissions creates a jarring experience, and using only a `placeholder` for the phone number input loses context once the user starts typing. This is a common pattern in the app that reduces both usability and accessibility.
+**Action:** Always pair `TextInput` components with an explicit, statically visible `<Text>` label (linked via `nativeID` and `accessibilityLabelledBy`). Additionally, use `disabled={!inputValue.trim()}` on submission buttons to prevent errors before they happen, rather than relying on disruptive alerts after the fact.
