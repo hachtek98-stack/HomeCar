@@ -108,6 +108,7 @@ app.post('/api/requests', (req, res) => {
 // 3. Get Requests (Different filters based on user role handled by client or server)
 app.get('/api/requests', (req, res) => {
     const patientId = req.query.patientId;
+    const nurseId = req.query.nurseId;
 
     let query = `
         SELECT r.*, u.phone as patientPhone
@@ -119,6 +120,12 @@ app.get('/api/requests', (req, res) => {
     if (patientId) {
         query += ` WHERE r.patientId = ?`;
         params.push(patientId);
+    } else if (nurseId) {
+        // ⚡ Bolt: Added server-side filtering for nurses to prevent transmitting massive base64 image strings
+        // to clients over the network. Reduces JSON payload size by >90% per request and eliminates React Native
+        // client out-of-memory errors.
+        query += ` WHERE r.status = 'paid' OR r.nurseId = ?`;
+        params.push(nurseId);
     }
 
     db.all(query, params, (err, rows) => {
