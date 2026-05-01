@@ -7,7 +7,8 @@ export default function NurseDashboard() {
   const { user, requests, logout } = useContext(AppContext);
   const navigation = useNavigation();
 
-  // Nurses only see requests that are 'paid' (ready to be picked up) or assigned to them
+  // ⚡ Bolt: Keep client-side array filtering for UI reactivity (e.g. if request is optimistically updated).
+  // The backend API now pre-filters the bulk data based on nurseId and status, minimizing network payload.
   const availableRequests = requests.filter(req => req.status === 'paid' || (req.status === 'confirmed' && req.nurseId === user.id));
 
   const renderItem = ({ item }) => (
