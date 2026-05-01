@@ -1,0 +1,3 @@
+## 2024-05-01 - Explicit Accessible Labels for React Native TextInputs
+**Learning:** In React Native, `TextInput` components lack a direct `label` prop like HTML forms. Relying solely on `placeholder` text is insufficient for accessibility and disappears upon typing. To ensure continuous context and robust screen reader support, an explicit `<Text>` component must be associated with the input.
+**Action:** Always pair `TextInput` components with an explicit `<Text>` label. Use `nativeID` on the `<Text>` and `accessibilityLabelledBy` on the `TextInput` to establish the semantic linkage for assistive technologies.
