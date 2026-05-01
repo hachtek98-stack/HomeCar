@@ -109,8 +109,11 @@ app.post('/api/requests', (req, res) => {
 app.get('/api/requests', (req, res) => {
     const patientId = req.query.patientId;
 
+    // Security Fix: Prevent Excessive Data Exposure (Privacy Leak)
+    // Only expose the patient's phone number if the request is 'confirmed'.
+    // This protects patient privacy before the nurse has officially accepted the request.
     let query = `
-        SELECT r.*, u.phone as patientPhone
+        SELECT r.*, CASE WHEN r.status = 'confirmed' THEN u.phone ELSE NULL END as patientPhone
         FROM requests r
         JOIN users u ON r.patientId = u.id
     `;
