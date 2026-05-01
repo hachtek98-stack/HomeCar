@@ -108,6 +108,7 @@ app.post('/api/requests', (req, res) => {
 // 3. Get Requests (Different filters based on user role handled by client or server)
 app.get('/api/requests', (req, res) => {
     const patientId = req.query.patientId;
+    const nurseId = req.query.nurseId;
 
     let query = `
         SELECT r.*, u.phone as patientPhone
@@ -116,9 +117,23 @@ app.get('/api/requests', (req, res) => {
     `;
     let params = [];
 
+    const statuses = req.query.status;
+
     if (patientId) {
         query += ` WHERE r.patientId = ?`;
         params.push(patientId);
+    } else if (nurseId) {
+        // ⚡ Bolt: Server-side filtering avoids transmitting large base64 strings for requests a nurse doesn't need to see
+        query += ` WHERE (r.nurseId = ? OR r.nurseId IS NULL)`;
+        params.push(nurseId);
+    }
+
+    if (statuses) {
+        const statusArray = statuses.split(',');
+        const placeholders = statusArray.map(() => '?').join(',');
+        const statusPrefix = (patientId || nurseId) ? ' AND' : ' WHERE';
+        query += `${statusPrefix} r.status IN (${placeholders})`;
+        params.push(...statusArray);
     }
 
     db.all(query, params, (err, rows) => {
