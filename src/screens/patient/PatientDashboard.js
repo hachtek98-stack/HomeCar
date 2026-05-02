@@ -1,25 +1,30 @@
-import React, { useContext } from 'react';
+import React, { useContext, useMemo, useCallback } from 'react';
 import { View, Text, StyleSheet, FlatList, Button, TouchableOpacity } from 'react-native';
 import { AppContext } from '../../context/AppContext';
 import { useNavigation } from '@react-navigation/native';
+
+const getStatusText = (status) => {
+  switch (status) {
+    case 'pending': return 'En attente de paiement';
+    case 'paid': return 'En attente d\'un infirmier';
+    case 'confirmed': return 'Confirmé par un infirmier';
+    default: return status;
+  }
+};
 
 export default function PatientDashboard() {
   const { user, requests, logout } = useContext(AppContext);
   const navigation = useNavigation();
 
-  // Filter requests for the current patient
-  const patientRequests = requests.filter(req => req.patientId === user.id);
+  // ⚡ BOLT: Memoize filtered list to prevent new array creation on every render
+  // This preserves reference equality for FlatList's internal PureComponent optimizations
+  const patientRequests = useMemo(() => {
+    return requests.filter(req => req.patientId === user.id);
+  }, [requests, user.id]);
 
-  const getStatusText = (status) => {
-    switch (status) {
-      case 'pending': return 'En attente de paiement';
-      case 'paid': return 'En attente d\'un infirmier';
-      case 'confirmed': return 'Confirmé par un infirmier';
-      default: return status;
-    }
-  };
-
-  const renderItem = ({ item }) => (
+  // ⚡ BOLT: Memoize renderItem to prevent inline function recreation on every render
+  // This prevents unnecessary re-renders of FlatList items
+  const renderItem = useCallback(({ item }) => (
     <View style={styles.card}>
       <Text style={styles.date}>Demande du {new Date(item.createdAt).toLocaleDateString()}</Text>
       <Text style={styles.status}>Statut : {getStatusText(item.status)}</Text>
@@ -30,7 +35,7 @@ export default function PatientDashboard() {
         />
       )}
     </View>
-  );
+  ), [navigation]);
 
   return (
     <View style={styles.container}>
