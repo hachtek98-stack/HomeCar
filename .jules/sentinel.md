@@ -1,0 +1,4 @@
+## 2024-05-02 - [Data Leakage in GET /api/requests]
+**Vulnerability:** The `GET /api/requests` endpoint was returning the patient's phone number (`u.phone as patientPhone`) in plaintext regardless of the request's status, potentially leaking PII to all users (like nurses viewing available requests).
+**Learning:** In applications where server-side authorization is weak or non-existent, data filtering and masking must be explicitly handled in database queries to prevent unauthorized access to sensitive information before a transaction or relationship is formally established (e.g. before a nurse accepts a request).
+**Prevention:** Always evaluate data privacy requirements when returning PII. Use conditional logic directly in SQL queries (like `CASE WHEN ... THEN ... ELSE NULL END`) to mask sensitive data based on the business logic status (e.g. only show phone number when status is 'confirmed').
