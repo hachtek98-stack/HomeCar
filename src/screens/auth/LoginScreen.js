@@ -20,9 +20,13 @@ export default function LoginScreen() {
       <Text style={styles.title}>HomeCar</Text>
       <Text style={styles.subtitle}>Connexion</Text>
 
+      <Text nativeID="phoneLabel" style={styles.label}>
+        Numéro de téléphone
+      </Text>
       <TextInput
+        accessibilityLabelledBy="phoneLabel"
         style={styles.input}
-        placeholder="Numéro de téléphone"
+        placeholder="Ex: 77..."
         value={phone}
         onChangeText={setPhone}
         keyboardType="phone-pad"
@@ -55,6 +59,12 @@ const styles = StyleSheet.create({
     fontSize: 18,
     textAlign: 'center',
     marginBottom: 30,
+  },
+  label: {
+    fontSize: 14,
+    marginBottom: 5,
+    fontWeight: '600',
+    color: '#333',
   },
   input: {
     borderWidth: 1,
