@@ -1,0 +1,3 @@
+## 2024-05-03 - FlatList Performance Patterns in React Native
+**Learning:** Inline array operations (like `.filter()`) and unmemoized inline functions passed to a `FlatList`'s `data` and `renderItem` props break reference equality. This disables React Native's internal `PureComponent` optimizations within `VirtualizedList`, causing the entire list and all its items to unnecessarily re-render on every state change, which can significantly degrade performance with large lists.
+**Action:** Always wrap derived lists (like filtered arrays) in a `useMemo` hook and `renderItem` functions in `useCallback`. Furthermore, extract utility functions out of the component if they don't depend on component state.

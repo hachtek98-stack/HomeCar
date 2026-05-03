@@ -1,4 +1,4 @@
-import React, { useContext } from 'react';
+import React, { useContext, useMemo, useCallback } from 'react';
 import { View, Text, StyleSheet, FlatList, TouchableOpacity } from 'react-native';
 import { AppContext } from '../../context/AppContext';
 import { useNavigation } from '@react-navigation/native';
@@ -7,10 +7,15 @@ export default function NurseDashboard() {
   const { user, requests, logout } = useContext(AppContext);
   const navigation = useNavigation();
 
+  // ⚡ Bolt: Memoize filtered list to prevent unnecessary FlatList re-renders
   // Nurses only see requests that are 'paid' (ready to be picked up) or assigned to them
-  const availableRequests = requests.filter(req => req.status === 'paid' || (req.status === 'confirmed' && req.nurseId === user.id));
+  const availableRequests = useMemo(() =>
+    requests.filter(req => req.status === 'paid' || (req.status === 'confirmed' && req.nurseId === user.id)),
+    [requests, user.id]
+  );
 
-  const renderItem = ({ item }) => (
+  // ⚡ Bolt: Memoize renderItem function to maintain reference equality for FlatList optimization
+  const renderItem = useCallback(({ item }) => (
     <TouchableOpacity
       style={styles.card}
       onPress={() => navigation.navigate('RequestDetails', { request: item })}
@@ -21,7 +26,7 @@ export default function NurseDashboard() {
       </Text>
       <Text style={styles.details}>Appuyez pour voir l'ordonnance</Text>
     </TouchableOpacity>
-  );
+  ), [navigation]);
 
   return (
     <View style={styles.container}>
