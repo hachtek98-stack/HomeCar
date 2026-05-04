@@ -1,0 +1,3 @@
+## 2024-05-24 - FlatList Memoization and Inline Filter Anti-Pattern
+**Learning:** Passing inline array filtering (like `requests.filter(...)`) to a `FlatList`'s `data` prop breaks reference equality on every render, causing the internal `PureComponent` logic of `FlatList` to fail and resulting in unnecessary re-renders of the entire list. Similarly, an un-memoized `renderItem` function is recreated on every render.
+**Action:** Always wrap derived lists in a `useMemo` hook, `renderItem` functions in `useCallback` (adding appropriate dependencies like `navigation`), and extract stateless utility functions (like `getStatusText`) outside the component scope to avoid recreating them on every render.
