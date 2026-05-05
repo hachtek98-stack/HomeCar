@@ -1,0 +1,4 @@
+## 2024-05-05 - Fix PII data exposure and insecure error handling
+**Vulnerability:** Raw database errors were returned directly to the client in API responses, leaking internal backend details. Also, patient phone numbers (PII) were unnecessarily exposed in the `GET /api/requests` endpoint before requests were confirmed.
+**Learning:** Returning unhandled or raw errors in `res.status(500).json()` exposes internal information. Lack of role-based data validation allowed unrestricted PII access.
+**Prevention:** Always log the actual raw error securely on the server-side, but return a generic 'Internal server error' to the client. Apply data privacy constraints directly at the database query level (e.g. using `CASE WHEN`) when strict server-side authorization checks aren't available to mask PII from unauthorized users.
