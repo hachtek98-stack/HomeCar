@@ -1,0 +1,3 @@
+## 2024-05-24 - React Native TextInput Accessibility Labeling
+**Learning:** In React Native, `TextInput` components do not inherently announce their purpose clearly to screen readers if they only rely on placeholder text. They must be explicitly paired with a `<Text>` label.
+**Action:** Always link `<Text>` labels to `TextInput` components using `nativeID` on the label and `accessibilityLabelledBy` on the input, and provide an `accessibilityLabel` as a fallback to ensure continuous context and screen reader accessibility.
