@@ -1,0 +1,3 @@
+## 2024-05-24 - FlatList inside React Context
+**Learning:** In React Native, filtering arrays inline inside components that consume a global Context API (like `AppContext`) will cause a completely new array reference to be generated on *every* context update. This breaks reference equality and bypasses internal `PureComponent` optimizations within `FlatList`, leading to massive re-renders across screens whenever the global state changes.
+**Action:** Always wrap derived lists passing into a `FlatList`'s `data` prop in a `useMemo` hook, wrap the `renderItem` function in `useCallback`, and extract stateless utility functions out of the component scope to preserve reference equality.
