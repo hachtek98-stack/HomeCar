@@ -1,0 +1,3 @@
+## 2024-05-12 - Prevent FlatList Re-renders from Inline Operations
+**Learning:** In React Native, inline array operations (like `.filter()`) and inline `renderItem` functions break reference equality on every render. `FlatList` internal optimizations (such as inheriting from `PureComponent`) will interpret these new references as entirely new props, forcing re-renders for every visible list item even when data hasn't changed.
+**Action:** Always wrap derived list data arrays in a `useMemo` hook with proper dependencies. Always wrap the `renderItem` function in a `useCallback` hook. Additionally, extract stateless utility helper functions (like status formatting) outside the React component scope to prevent recreating the function instance on each render.
