@@ -40,9 +40,11 @@ export default function PaymentScreen() {
         Entrez votre numéro D-Money ou Waafi pour régler les frais de déplacement de l'infirmier.
       </Text>
 
+      <Text nativeID="phoneLabelPayment" style={styles.label}>Numéro de téléphone D-Money ou Waafi</Text>
       <TextInput
         style={styles.input}
         placeholder="Numéro de téléphone (ex: 77...)"
+        accessibilityLabelledBy="phoneLabelPayment"
         value={phoneNumber}
         onChangeText={setPhoneNumber}
         keyboardType="phone-pad"
@@ -75,6 +77,12 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     marginBottom: 30,
     color: '#666',
+  },
+  label: {
+    fontSize: 14,
+    fontWeight: 'bold',
+    marginBottom: 5,
+    color: '#333',
   },
   input: {
     borderWidth: 1,
