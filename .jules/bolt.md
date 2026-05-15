@@ -1,0 +1,3 @@
+## 2024-05-17 - React Native FlatList Performance with useMemo and useCallback
+**Learning:** In React Native, passing inline array operations (like `.filter()`) to a `FlatList`'s `data` prop breaks reference equality. This defeats internal `PureComponent` optimizations within `FlatList`, leading to unnecessary re-renders of the entire list on every component state or context change.
+**Action:** Always wrap derived lists (like filtered arrays) in a `useMemo` hook before passing them to `FlatList`. Additionally, wrap the `renderItem` function in a `useCallback` hook, and extract stateless utility functions (like status text mapping) outside the component scope to minimize dependency array complexity.
