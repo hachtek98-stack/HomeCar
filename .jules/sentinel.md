@@ -1,0 +1,4 @@
+## 2023-10-27 - [PII Data Exposure]
+**Vulnerability:** Insecure Direct Object Reference / Data Exposure where nurses could see patient numbers before confirming a request via the `GET /api/requests` endpoint.
+**Learning:** Returning all fields from a database query, particularly in joins (like `SELECT r.*, u.phone as patientPhone`), can leak Personally Identifiable Information (PII) if the client is expected to filter it out or if the application logic does not strictly control access based on authorization status.
+**Prevention:** To prevent excessive data exposure, conditionally mask PII directly via database queries (e.g., `CASE WHEN r.status = 'confirmed' THEN u.phone ELSE NULL END as patientPhone`) or apply strict data filtering logic on the server before sending responses to the client.
