@@ -1,0 +1,4 @@
+## 2024-03-21 - [Data Exposure in API Response]
+**Vulnerability:** The `/api/requests` GET endpoint was returning the patient's phone number (`patientPhone`) in all states (e.g., 'pending', 'paid') by default, which leaked PII (Personally Identifiable Information) before a nurse was confirmed for the request.
+**Learning:** Returning all joined database columns indiscriminately without considering the application's state or role-based access rules can lead to significant PII data leakage, especially when privacy is a key feature of the application (hiding phone numbers until confirmation).
+**Prevention:** Mask conditionally exposed fields directly within the SQL query (e.g., using `CASE WHEN r.status = 'confirmed' THEN u.phone ELSE NULL END as patientPhone`) to prevent excessive data exposure at the database layer before the application processes it.
