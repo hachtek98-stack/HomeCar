@@ -20,18 +20,35 @@ export default function LoginScreen() {
       <Text style={styles.title}>HomeCar</Text>
       <Text style={styles.subtitle}>Connexion</Text>
 
+      <Text nativeID="phoneLabel" style={styles.label}>
+        Numéro de téléphone
+      </Text>
       <TextInput
         style={styles.input}
-        placeholder="Numéro de téléphone"
+        placeholder="Ex: 77..."
         value={phone}
         onChangeText={setPhone}
         keyboardType="phone-pad"
+        accessibilityLabelledBy="phoneLabel"
+        accessibilityLabel="Numéro de téléphone"
+        accessibilityHint="Entrez votre numéro de téléphone pour vous connecter"
       />
 
       <View style={styles.buttonContainer}>
-        <Button title="Je suis Patient" onPress={() => handleLogin('patient')} />
+        <Button
+          title="Je suis Patient"
+          onPress={() => handleLogin('patient')}
+          accessibilityLabel="Connexion en tant que patient"
+          accessibilityHint="Double-cliquez pour vous connecter à l'espace patient"
+        />
         <View style={styles.spacer} />
-        <Button title="Je suis Infirmier" onPress={() => handleLogin('nurse')} color="#2196F3" />
+        <Button
+          title="Je suis Infirmier"
+          onPress={() => handleLogin('nurse')}
+          color="#2196F3"
+          accessibilityLabel="Connexion en tant qu'infirmier"
+          accessibilityHint="Double-cliquez pour vous connecter à l'espace infirmier"
+        />
       </View>
     </View>
   );
@@ -55,6 +72,12 @@ const styles = StyleSheet.create({
     fontSize: 18,
     textAlign: 'center',
     marginBottom: 30,
+  },
+  label: {
+    fontSize: 16,
+    fontWeight: 'bold',
+    marginBottom: 8,
+    color: '#333',
   },
   input: {
     borderWidth: 1,
