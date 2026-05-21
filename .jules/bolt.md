@@ -1,0 +1,3 @@
+## 2024-05-18 - [React Native FlatList Re-renders]
+**Learning:** In React Native, inline array operations (like `.filter()`) passed to a `FlatList`'s `data` prop break reference equality and internal `PureComponent` optimizations, causing unnecessary re-renders. Similarly, dynamically creating `renderItem` functions inside the component body breaks reference equality for the item renderer. Extracting stateless utility functions avoids recreating them on every render cycle.
+**Action:** Always wrap derived lists passed to `FlatList` in a `useMemo` hook, wrap `renderItem` functions in `useCallback`, and extract stateless utility functions outside the component scope.
