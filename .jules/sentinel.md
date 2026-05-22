@@ -1,0 +1,4 @@
+## 2024-05-22 - Prevent Information Exposure via Error Messages
+**Vulnerability:** The backend Express API was previously returning raw database error messages (`err.message`) directly to the client in multiple endpoints when database operations failed.
+**Learning:** This could leak sensitive information about the database schema, table structures, and internal queries, which an attacker could use to formulate more targeted attacks (Information Exposure).
+**Prevention:** All database errors should be caught and handled using a generic server-side helper function (e.g., `handleDbError`). This function should log the detailed error internally (`console.error(err)`) for debugging purposes and return a generic error message (e.g., `{"error": "Internal server error"}`) to the client.
