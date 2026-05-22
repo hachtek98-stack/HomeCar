@@ -1,25 +1,30 @@
-import React, { useContext } from 'react';
+import React, { useContext, useMemo, useCallback } from 'react';
 import { View, Text, StyleSheet, FlatList, Button, TouchableOpacity } from 'react-native';
 import { AppContext } from '../../context/AppContext';
 import { useNavigation } from '@react-navigation/native';
+
+// Extract stateless utility function outside component scope
+const getStatusText = (status) => {
+  switch (status) {
+    case 'pending': return 'En attente de paiement';
+    case 'paid': return 'En attente d\'un infirmier';
+    case 'confirmed': return 'Confirmé par un infirmier';
+    default: return status;
+  }
+};
 
 export default function PatientDashboard() {
   const { user, requests, logout } = useContext(AppContext);
   const navigation = useNavigation();
 
   // Filter requests for the current patient
-  const patientRequests = requests.filter(req => req.patientId === user.id);
+  // Wrap derived list in useMemo to preserve reference equality and prevent FlatList re-renders
+  const patientRequests = useMemo(() => {
+    return requests.filter(req => req.patientId === user.id);
+  }, [requests, user?.id]);
 
-  const getStatusText = (status) => {
-    switch (status) {
-      case 'pending': return 'En attente de paiement';
-      case 'paid': return 'En attente d\'un infirmier';
-      case 'confirmed': return 'Confirmé par un infirmier';
-      default: return status;
-    }
-  };
-
-  const renderItem = ({ item }) => (
+  // Wrap renderItem in useCallback to avoid recreating the function on every render
+  const renderItem = useCallback(({ item }) => (
     <View style={styles.card}>
       <Text style={styles.date}>Demande du {new Date(item.createdAt).toLocaleDateString()}</Text>
       <Text style={styles.status}>Statut : {getStatusText(item.status)}</Text>
@@ -30,7 +35,7 @@ export default function PatientDashboard() {
         />
       )}
     </View>
-  );
+  ), [navigation]);
 
   return (
     <View style={styles.container}>
