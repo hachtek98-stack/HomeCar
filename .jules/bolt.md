@@ -1,0 +1,3 @@
+## 2024-05-22 - Global State and FlatList Anti-Pattern
+**Learning:** Found a pattern where global `AppContext` state is filtered inline within components (e.g., `NurseDashboard`, `PatientDashboard`) and passed directly to `FlatList`. This breaks reference equality and causes unnecessary app-wide re-renders because the inline `.filter()` creates a new array reference on every context update.
+**Action:** Always wrap derived lists from global state in a `useMemo` hook and `renderItem` functions in `useCallback` when using `FlatList`. Also, extract stateless utility functions outside the component scope to avoid unnecessary function recreation.
