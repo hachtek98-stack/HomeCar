@@ -110,7 +110,7 @@ app.get('/api/requests', (req, res) => {
     const patientId = req.query.patientId;
 
     let query = `
-        SELECT r.*, u.phone as patientPhone
+        SELECT r.*, CASE WHEN r.status = 'confirmed' THEN u.phone ELSE NULL END as patientPhone
         FROM requests r
         JOIN users u ON r.patientId = u.id
     `;
