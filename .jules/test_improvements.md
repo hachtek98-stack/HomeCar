@@ -1,0 +1,3 @@
+- Use specific and semantic queries when testing React Native contexts to avoid regressions.
+- If dependencies are missing or incompatible, downgrading strictly for testing might work as a last resort, but we should always be careful about maintaining stability for other features.
+- We tested AppContext providing high coverage (100%) and valid checks for ignoring invalid parameters.
