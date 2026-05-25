@@ -1,16 +1,11 @@
-import React, { useContext, useMemo, useCallback } from 'react';
+import React, { useContext, useCallback } from 'react';
 import { View, Text, StyleSheet, FlatList, TouchableOpacity } from 'react-native';
 import { AppContext } from '../../context/AppContext';
 import { useNavigation } from '@react-navigation/native';
 
 export default function NurseDashboard() {
-  const { user, requests, logout } = useContext(AppContext);
+  const { requests, logout } = useContext(AppContext);
   const navigation = useNavigation();
-
-  // Nurses only see requests that are 'paid' (ready to be picked up) or assigned to them
-  const availableRequests = useMemo(() => {
-    return requests.filter(req => req.status === 'paid' || (req.status === 'confirmed' && req.nurseId === user?.id));
-  }, [requests, user?.id]);
 
   const renderItem = useCallback(({ item }) => (
     <TouchableOpacity
@@ -36,7 +31,7 @@ export default function NurseDashboard() {
 
       <Text style={styles.subtitle}>Demandes disponibles</Text>
       <FlatList
-        data={availableRequests}
+        data={requests}
         keyExtractor={item => item.id}
         renderItem={renderItem}
         ListEmptyComponent={<Text style={styles.empty}>Aucune demande en attente</Text>}
