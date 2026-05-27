@@ -35,7 +35,6 @@ const sendPushNotification = async (somePushTokens, message) => {
 const PORT = process.env.PORT || 3000;
 
 app.use(cors());
-app.use(bodyParser.json());
 // Increase payload limit for base64 image strings if needed
 app.use(bodyParser.json({limit: '50mb'}));
 app.use(bodyParser.urlencoded({limit: '50mb', extended: true}));
@@ -52,7 +51,10 @@ app.post('/api/login', (req, res) => {
 
     // Try to find the user
     db.get(`SELECT * FROM users WHERE phone = ? AND role = ?`, [phone, role], (err, row) => {
-        if (err) return res.status(500).json({ error: err.message });
+        if (err) {
+            console.error('Database error:', err);
+            return res.status(500).json({ error: 'Internal server error' });
+        }
 
         if (row) {
             // User exists
@@ -61,7 +63,10 @@ app.post('/api/login', (req, res) => {
             // Register new user (mocking name for simplicity)
             const name = role === 'patient' ? 'Patient ' + phone : 'Infirmier ' + phone;
             db.run(`INSERT INTO users (name, phone, role) VALUES (?, ?, ?)`, [name, phone, role], function(err) {
-                if (err) return res.status(500).json({ error: err.message });
+                if (err) {
+                    console.error('Database error:', err);
+                    return res.status(500).json({ error: 'Internal server error' });
+                }
                 res.json({
                     id: this.lastID,
                     name,
@@ -79,7 +84,10 @@ app.post('/api/users/:id/token', (req, res) => {
     const { pushToken } = req.body;
 
     db.run(`UPDATE users SET pushToken = ? WHERE id = ?`, [pushToken, id], function(err) {
-        if (err) return res.status(500).json({ error: err.message });
+        if (err) {
+            console.error('Database error:', err);
+            return res.status(500).json({ error: 'Internal server error' });
+        }
         res.json({ success: true });
     });
 });
@@ -96,7 +104,10 @@ app.post('/api/requests', (req, res) => {
         `INSERT INTO requests (patientId, prescriptionImage, latitude, longitude) VALUES (?, ?, ?, ?)`,
         [patientId, prescriptionImage, latitude, longitude],
         function(err) {
-            if (err) return res.status(500).json({ error: err.message });
+            if (err) {
+                console.error('Database error:', err);
+                return res.status(500).json({ error: 'Internal server error' });
+            }
 
             db.get(`SELECT * FROM requests WHERE id = ?`, [this.lastID], (err, row) => {
                 res.json(row);
@@ -122,7 +133,10 @@ app.get('/api/requests', (req, res) => {
     }
 
     db.all(query, params, (err, rows) => {
-        if (err) return res.status(500).json({ error: err.message });
+        if (err) {
+            console.error('Database error:', err);
+            return res.status(500).json({ error: 'Internal server error' });
+        }
         res.json(rows);
     });
 });
@@ -140,7 +154,10 @@ app.put('/api/requests/:id/pay', (req, res) => {
         `UPDATE requests SET status = 'paid', paymentPhone = ? WHERE id = ? AND status = 'pending'`,
         [paymentPhone, id],
         function(err) {
-            if (err) return res.status(500).json({ error: err.message });
+            if (err) {
+                console.error('Database error:', err);
+                return res.status(500).json({ error: 'Internal server error' });
+            }
             if (this.changes === 0) return res.status(404).json({ error: 'Request not found or already paid' });
 
             // Notify nurses about the new paid request
@@ -169,7 +186,10 @@ app.put('/api/requests/:id/accept', (req, res) => {
         `UPDATE requests SET status = 'confirmed', nurseId = ? WHERE id = ? AND status = 'paid'`,
         [nurseId, id],
         function(err) {
-            if (err) return res.status(500).json({ error: err.message });
+            if (err) {
+                console.error('Database error:', err);
+                return res.status(500).json({ error: 'Internal server error' });
+            }
             if (this.changes === 0) return res.status(404).json({ error: 'Request not found or already accepted' });
 
             // Notify patient that a nurse accepted
