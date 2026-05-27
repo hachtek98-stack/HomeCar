@@ -30,7 +30,11 @@ const db = new sqlite3.Database(dbPath, (err) => {
             createdAt DATETIME DEFAULT CURRENT_TIMESTAMP,
             FOREIGN KEY(patientId) REFERENCES users(id),
             FOREIGN KEY(nurseId) REFERENCES users(id)
-        )`);
+        )`, () => {
+            // ⚡ Bolt: Add indices to optimize request filtering
+            db.run(`CREATE INDEX IF NOT EXISTS idx_requests_patientId ON requests(patientId)`);
+            db.run(`CREATE INDEX IF NOT EXISTS idx_requests_status_nurseId ON requests(status, nurseId)`);
+        });
 
         // Insert some dummy users if none exist
         db.get("SELECT count(*) as count FROM users", (err, row) => {

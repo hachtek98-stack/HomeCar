@@ -27,10 +27,11 @@ export const AppProvider = ({ children }) => {
   const fetchRequests = async (currentUser) => {
     try {
       let url = `${API_URL}/requests`;
-      // If patient, only fetch their requests. If nurse, fetch all.
-      // In a real app, backend should handle role-based filtering based on auth token.
       if (currentUser && currentUser.role === 'patient') {
         url += `?patientId=${currentUser.id}`;
+      } else if (currentUser && currentUser.role === 'nurse') {
+        // ⚡ Bolt: Fetch only relevant requests to avoid downloading massive base64 payloads
+        url += `?nurseId=${currentUser.id}`;
       }
       const response = await fetch(url);
       const data = await response.json();
