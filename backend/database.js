@@ -32,6 +32,11 @@ const db = new sqlite3.Database(dbPath, (err) => {
             FOREIGN KEY(nurseId) REFERENCES users(id)
         )`);
 
+        // Add indices to optimize request filtering
+        db.run(`CREATE INDEX IF NOT EXISTS idx_patientId ON requests(patientId)`);
+        db.run(`CREATE INDEX IF NOT EXISTS idx_nurseId ON requests(nurseId)`);
+        db.run(`CREATE INDEX IF NOT EXISTS idx_status ON requests(status)`);
+
         // Insert some dummy users if none exist
         db.get("SELECT count(*) as count FROM users", (err, row) => {
             if (row && row.count === 0) {

@@ -31,6 +31,8 @@ export const AppProvider = ({ children }) => {
       // In a real app, backend should handle role-based filtering based on auth token.
       if (currentUser && currentUser.role === 'patient') {
         url += `?patientId=${currentUser.id}`;
+      } else if (currentUser && currentUser.role === 'nurse') {
+        url += `?nurseId=${currentUser.id}`;
       }
       const response = await fetch(url);
       const data = await response.json();
