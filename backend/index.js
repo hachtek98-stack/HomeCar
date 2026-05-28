@@ -108,6 +108,7 @@ app.post('/api/requests', (req, res) => {
 // 3. Get Requests (Different filters based on user role handled by client or server)
 app.get('/api/requests', (req, res) => {
     const patientId = req.query.patientId;
+    const nurseId = req.query.nurseId;
 
     let query = `
         SELECT r.*, CASE WHEN r.status = 'confirmed' THEN u.phone ELSE NULL END as patientPhone
@@ -119,6 +120,10 @@ app.get('/api/requests', (req, res) => {
     if (patientId) {
         query += ` WHERE r.patientId = ?`;
         params.push(patientId);
+    } else if (nurseId) {
+        // Optimize: Don't fetch unassigned/unpaid requests for nurses to reduce base64 image payload
+        query += ` WHERE r.status = 'paid' OR r.nurseId = ?`;
+        params.push(nurseId);
     }
 
     db.all(query, params, (err, rows) => {
