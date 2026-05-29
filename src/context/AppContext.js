@@ -31,6 +31,10 @@ export const AppProvider = ({ children }) => {
       // In a real app, backend should handle role-based filtering based on auth token.
       if (currentUser && currentUser.role === 'patient') {
         url += `?patientId=${currentUser.id}`;
+      } else if (currentUser && currentUser.role === 'nurse') {
+        // ⚡ Bolt: Pass nurseId to backend to enable server-side filtering
+        // Reduces network payload size by avoiding download of all requests
+        url += `?nurseId=${currentUser.id}`;
       }
       const response = await fetch(url);
       const data = await response.json();
