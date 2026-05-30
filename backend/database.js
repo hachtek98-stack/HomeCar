@@ -32,6 +32,11 @@ const db = new sqlite3.Database(dbPath, (err) => {
             FOREIGN KEY(nurseId) REFERENCES users(id)
         )`);
 
+        // ⚡ Bolt: Add indices to optimize querying requests table by status and roles
+        db.run(`CREATE INDEX IF NOT EXISTS idx_requests_patient ON requests(patientId)`);
+        db.run(`CREATE INDEX IF NOT EXISTS idx_requests_nurse ON requests(nurseId)`);
+        db.run(`CREATE INDEX IF NOT EXISTS idx_requests_status ON requests(status)`);
+
         // Insert some dummy users if none exist
         db.get("SELECT count(*) as count FROM users", (err, row) => {
             if (row && row.count === 0) {
