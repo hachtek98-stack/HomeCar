@@ -40,18 +40,23 @@ export default function PaymentScreen() {
         Entrez votre numéro D-Money ou Waafi pour régler les frais de déplacement de l'infirmier.
       </Text>
 
+      <Text style={styles.label} nativeID="paymentPhoneLabel">
+        Numéro de téléphone
+      </Text>
       <TextInput
         style={styles.input}
-        placeholder="Numéro de téléphone (ex: 77...)"
+        placeholder="ex: 77..."
         value={phoneNumber}
         onChangeText={setPhoneNumber}
         keyboardType="phone-pad"
+        accessibilityLabelledBy="paymentPhoneLabel"
       />
 
       <Button
         title="Valider le paiement"
         onPress={handlePayment}
         color="#4CAF50"
+        disabled={!phoneNumber}
       />
     </View>
   );
@@ -76,6 +81,13 @@ const styles = StyleSheet.create({
     marginBottom: 30,
     color: '#666',
   },
+  label: {
+    fontSize: 14,
+    fontWeight: '500',
+    marginBottom: 8,
+    color: '#333',
+    alignSelf: 'flex-start',
+  },
   input: {
     borderWidth: 1,
     borderColor: '#ccc',
@@ -83,5 +95,6 @@ const styles = StyleSheet.create({
     borderRadius: 8,
     marginBottom: 20,
     fontSize: 18,
+    width: '100%',
   }
 });
